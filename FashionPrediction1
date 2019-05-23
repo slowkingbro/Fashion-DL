@@ -1,0 +1,224 @@
+
+# coding: utf-8
+
+# In[1]:
+
+
+import os
+import sys
+import scipy.io
+import scipy.misc
+import matplotlib.pyplot as plt
+from matplotlib.pyplot import imshow
+from PIL import Image
+from nst_utils import *
+import numpy as np
+import tensorflow as tf
+
+#get_ipython().run_line_magic('matplotlib', 'inline')
+
+
+# In[2]:
+
+
+import numpy as np
+from keras import layers
+from keras.layers import Input, Dense, Activation, ZeroPadding2D, BatchNormalization, Flatten, Conv2D
+from keras.layers import AveragePooling2D, MaxPooling2D, Dropout, GlobalMaxPooling2D, GlobalAveragePooling2D
+from keras.models import Model
+from keras.preprocessing import image
+from keras.utils import layer_utils
+from keras.utils.data_utils import get_file
+from keras.applications.imagenet_utils import preprocess_input
+#import pydot
+#from IPython.display import SVG
+from keras.utils.vis_utils import model_to_dot
+from keras.utils import plot_model
+#from kt_utils import *
+
+import keras.backend as K
+K.set_image_data_format('channels_last')
+import matplotlib.pyplot as plt
+from matplotlib.pyplot import imshow
+
+
+
+# In[20]:
+
+
+#model = load_vgg_model("imagenet-vgg-verydeep-19.mat")
+#print(model)
+
+
+# In[21]:
+
+
+#content_image = scipy.misc.imread("ClothingAttributeDataset/images/000001.jpg")
+#imshow(content_image)
+#content_image = reshape_and_normalize_image(content_image)
+#content_image
+#content_image.shape
+
+import os, sys
+#from IPython.display import display
+#from IPython.display import Image as _Imgdis
+from PIL import Image
+import numpy as np
+from time import time
+from time import sleep
+import pandas as pd # data processing, CSV file I/O (e.g. pd.read_csv)
+
+from scipy import ndimage
+from keras.preprocessing.image import ImageDataGenerator, array_to_img, img_to_array, load_img
+from scipy.misc import toimage
+from sklearn.model_selection import train_test_split
+
+folder = "ClothingAttributeDataset/images/"
+onlyfiles = [f for f in os.listdir(folder) if os.path.isfile(os.path.join(folder, f))]
+
+train_files = []
+i=0
+for _file in onlyfiles:
+    train_files.append(_file)
+    #label_in_file = _file.find("_")
+    #y_train.append(int(_file[0:label_in_file]))
+    
+print("Files in train_files: %d" % len(train_files))
+
+# Original Dimensions
+image_width = 267
+image_height = 400
+ratio = 4
+
+image_width = 224
+image_height = 224
+
+channels = 3
+#nb_classes = 1
+
+dataset = np.ndarray(shape=(len(train_files), image_height, image_width, channels),
+                     dtype=np.float32)
+
+i = 0
+for _file in train_files:
+    img = load_img(folder + "/" + _file)  # this is a PIL image
+    #img.show()
+    img = img.resize((image_height, image_width))
+    # Convert to Numpy Array
+    x = img_to_array(img)  
+    #x = x.reshape((image_height, image_width, channels))
+    #toimage(data).show()
+    # Normalize
+    x = (x - 128.0) / 128.0
+    dataset[i] = x
+    i += 1
+    if i % 250 == 0:
+        print("%d images to array" % i)
+print("All images to array!")
+
+from scipy.io import loadmat
+
+folder = "ClothingAttributeDataset/labels/"
+onlyfiles = [f for f in os.listdir(folder) if os.path.isfile(os.path.join(folder, f))]
+y_train = np.zeros((1856,1))
+
+for _file in onlyfiles[1:2]:
+    x = loadmat('ClothingAttributeDataset/labels/' + _file)
+    y_train = np.concatenate((y_train, x['GT']), axis = 1)
+
+    
+X = dataset
+y = y_train
+#y[np.isnan(y)]
+#replace nan with -1
+y[np.isnan(y)] = -1
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33)
+
+
+X_train.shape
+X_test.shape
+
+
+# ## Loading pre-trained weights
+
+# In[23]:
+
+
+from keras import applications
+
+vgg_model = applications.VGG16(weights='imagenet',
+                               include_top=False,
+                               input_shape=(224, 224, 3))
+
+# Creating dictionary that maps layer names to the layers
+layer_dict = dict([(layer.name, layer) for layer in vgg_model.layers])
+
+# Getting output tensor of the last VGG layer that we want to include
+x = layer_dict['block2_pool'].output
+
+# Stacking a new simple convolutional network on top of it    
+x = Conv2D(filters=64, kernel_size=(3, 3), activation='relu')(x)
+x = MaxPooling2D(pool_size=(2, 2))(x)
+x = Flatten()(x)
+x = Dense(256, activation='relu')(x)
+x = Dropout(0.5)(x)
+x = Dense(2, activation='softmax')(x)
+
+# Creating new model. Please note that this is NOT a Sequential() model.
+from keras.models import Model
+custom_model = Model(input=vgg_model.input, output=x)
+
+# Make sure that the pre-trained bottom layers are not trainable
+for layer in custom_model.layers[:7]:
+    layer.trainable = False
+
+# Do not forget to compile it
+custom_model.compile(loss='categorical_crossentropy',
+                     optimizer='rmsprop',
+                     metrics=['accuracy'])
+
+
+
+# In[70]:
+
+
+# This will load the whole VGG16 network, including the top Dense layers.
+# Note: by specifying the shape of top layers, input tensor shape is forced
+# to be (224, 224, 3), therefore you can use it only on 224x224 images.
+#vgg_model = applications.VGG16(weights='imagenet', include_top=True)
+
+# If you are only interested in convolution filters. Note that by not
+# specifying the shape of top layers, the input tensor shape is (None, None, 3),
+# so you can use them for any size of images.
+#vgg_model = applications.VGG16(weights='imagenet', include_top=False)
+
+# If you want to specify input tensor
+#from keras.layers import Input
+#input_tensor = Input(shape=(224, 224, 3))
+#vgg_model = applications.VGG16(weights='imagenet',
+#                               include_top=False,
+#                               input_tensor=input_tensor)
+
+# To see the models' architecture and layer names, run the following
+#vgg_model.summary()
+
+
+# ## Create a new network with bottom layers taken from VGG
+
+# In[24]:
+
+
+custom_model.fit(x=X_train, y=y_train, batch_size=16, epochs=40)
+
+
+# In[ ]:
+
+
+### START CODE HERE ### (1 line)
+preds = custom_model.evaluate(x = X_test,y = y_test)
+### END CODE HERE ###
+print()
+print ("Loss = " + str(preds[0]))
+print ("Test Accuracy = " + str(preds[1]))
+
