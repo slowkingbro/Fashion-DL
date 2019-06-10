@@ -82,9 +82,7 @@ file_count_arr = np.zeros([1856],dtype=int)
 
 for i in file_count:
     idx = int(i[:6])
-    #print(idx)
-    file_count_arr[idx-1] = int(file_count[i])
-    #print(file_count[i])
+     file_count_arr[idx-1] = int(file_count[i])
 
 y_train_raw = np.repeat(y_train_raw, file_count_arr, axis = 1)
 
@@ -109,6 +107,7 @@ print('y_label nan or y = 1 replaced with 0, y = 2 replaces with 1')
 
 y_pred = model.predict(X)
 
+'''
 np.save('y_actual.npy', y)
 np.save('y_pred.npy', y_pred)
 
