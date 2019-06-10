@@ -1,0 +1,58 @@
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+import pandas as pd
+
+#experiment = ['g6', 'g6', 'g6', 'g6', 'g6','g1', 'g1', 'g1', 'g1', 'g1']
+loss_val_g6 = [7.75, 6.80,6.48,6.40, 6.39]
+loss_val_g1=[7.95,6.92,6.49,6.40,6.38]
+
+#epoch = [1,2,3,4,5,1,2,3,4,5]
+#df = pd.DataFrame(dict(loss_val=loss_val, epoch=epoch, experiment=experiment))
+
+
+
+# plot the losses
+plt.style.use("ggplot")
+plt.figure()
+plt.plot(np.arange(0, len(loss_val_g1)), loss_val_g6,
+    label="loss_val_20_labels")
+plt.plot(np.arange(0, len(loss_val_g1)), loss_val_g1,
+    label="loss_val_11_labels")
+plt.title("F1 score = ")
+plt.xlabel("Epoch #")
+plt.ylabel("Loss")
+plt.legend(loc="upper right")
+plt.show()
+
+
+acc_val_g6 =[0.34,0.50,0.55,0.58,0.59]
+acc_val_g1 = [0.42,0.61,0.64,0.61,0.61]
+# plot the losses
+plt.style.use("ggplot")
+plt.figure()
+plt.plot(np.arange(0, len(loss_val_g1)), acc_val_g6,
+    label="accuracy_val_20_labels")
+plt.plot(np.arange(0, len(loss_val_g1)), acc_val_g1,
+    label="accuracy_val_11_labels")
+plt.title("F1 score for 20 labels = 0.51 and 11 labels = 0.44 ")
+plt.xlabel("Epoch #")
+plt.ylabel("Accuracy")
+plt.legend(loc="upper right")
+plt.show()
+
+loss_train_g6 = [8.27,6.99,6.35,6.15,6.09]
+loss_train_g1 = [8.38,7.17,6.43,6.17,6.09]
+loss_val_g6 = [7.75, 6.80,6.48,6.40, 6.39]
+loss_val_g1=[7.95,6.92,6.49,6.40,6.38]
+plt.style.use("ggplot")
+plt.figure()
+plt.plot(np.arange(0, len(loss_train_g6)), loss_train_g6,
+    label="loss_train_20_labels")
+plt.plot(np.arange(0, len(loss_val_g6)), loss_val_g6,
+    label="loss_val_20_labels")
+plt.title("Train and Val Loss Function ")
+plt.xlabel("Epoch #")
+plt.ylabel("Loss")
+plt.legend(loc="upper right")
+plt.show()
