@@ -14,3 +14,7 @@ We used clothing attributes dataset of Research from Stanford University Data an
 Originally there are 1856 pictures [6], and each image is processed with data augmentation, resized to the resolution of 224x224x3 and normalized by dividing 225 and between 0 and 1
 
 The training and testing split is 67% and 33%. Therefore, the shape for training is  a tensor of (13676, 224, 224, 3) and test is (6736, 224, 224, 3). 
+
+3. Final Project Poster
+
+![](final_poster.jpg)
